@@ -25,7 +25,7 @@ export const register = async (req, res, next) => {
 }
 
 export const registerAdmin = async (req, res, next) => {
-    const role = await Role.find({ });
+    const role = await Role.find({});
     const salt = await bcrypt.genSalt(10)
     const hashPassword = await bcrypt.hash(req.body.password, salt);
 
@@ -35,71 +35,73 @@ export const registerAdmin = async (req, res, next) => {
         userName: req.body.userName,
         email: req.body.email,
         password: hashPassword,
-        isAdmin : true,
+        isAdmin: true,
         roles: role,
     })
     await newUser.save();
     return next(CreateSuccess(200, "Admin Registered Successfully"));
 }
 
-export const login =async (req, res, next)=>{
+export const login = async (req, res, next) => {
     try {
-        const user = await User.findOne({email : req.body.email}).populate("roles", "role");
+        const user = await User.findOne({ email: req.body.email }).populate("roles", "role");
+        console.log("login id:- ", user._id);
 
         const { roles } = user;
-        if(!user){
+        if (!user) {
             return res.status(404).send("user not found")
         }
         const isPasswordCorrect = await bcrypt.compare(req.body.password, user.password);
-        if(!isPasswordCorrect){
+        if (!isPasswordCorrect) {
             return res.send(400).send("password is incorrect")
         }
         const token = jwt.sign(
-            {id: user._id, isAdmin : user.isAdmin, roles : roles},
+            { id: user._id, isAdmin: user.isAdmin, roles: roles },
             process.env.JWT_SECRET
         )
-        res.cookie("access_token", token, {httpOnly : true})
-        .status(200)
-        .json({
-            status : 200,
-            message : "login success",
-            data : user
-        })
+        res.cookie("access_token", token, { httpOnly: true })
+            .status(200)
+            .json({
+                status: 200,
+                message: "login success",
+                data: user
+            })
+
     } catch (error) {
         return res.status(500).send("something went wrong")
     }
 }
 
-export const sendEmail = async (req, res, next)=>{
+export const sendEmail = async (req, res, next) => {
     const email = req.body.email;
-    const user = await User.findOne({email : {$regex : '^'+email+'$', $options : 'i'}});
-    if(!user){
+    const user = await User.findOne({ email: { $regex: '^' + email + '$', $options: 'i' } });
+    if (!user) {
         return next(createError(404, "User not found"))
     }
     const payload = {
-        email : user.email 
+        email: user.email
     }
     const expiryTime = 300;
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: expiryTime});
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: expiryTime });
 
     const newToken = new UserToken({
-        userId : user._id,
-        token : token
+        userId: user._id,
+        token: token
     });
 
     const mailTransporter = nodemailer.createTransport({
-        service : "gmail",
-        auth : {
-            user : "harshalshelar2511@gmail.com",
-            pass : "onevhuwdugxbqepy"
+        service: "gmail",
+        auth: {
+            user: "harshalshelar2511@gmail.com",
+            pass: "onevhuwdugxbqepy"
         }
     });
 
     let mailDetails = {
-        from : "harshalshelar2511@gmail.com",
-        to : email,
-        subject : "Reset Password",
-        html : `
+        from: "harshalshelar2511@gmail.com",
+        to: email,
+        subject: "Reset Password",
+        html: `
         <html>
         <head>
         <title>Password Reset Request</title>
@@ -114,35 +116,35 @@ export const sendEmail = async (req, res, next)=>{
         </html>
         `,
     };
-    mailTransporter.sendMail(mailDetails, async(err, data)=>{
-        if(err){
+    mailTransporter.sendMail(mailDetails, async (err, data) => {
+        if (err) {
             console.log(err);
             return next(createError(500, "Something went wrong while sending mail"))
-        }else{
+        } else {
             await newToken.save();
             return next(CreateSuccess(200, "Email sent successfully"))
         }
     })
 };
 
-export const resetPassword = (req, res, next)=>{
+export const resetPassword = (req, res, next) => {
     const token = req.body.token;
     const newPassword = req.body.password;
 
-    jwt.verify(token, process.env.JWT_SECRET, async(err, data)=>{
-        if(err){
+    jwt.verify(token, process.env.JWT_SECRET, async (err, data) => {
+        if (err) {
             return next(createError(500, "Reset link is Expired"))
-        }else{
+        } else {
             const response = data;
-            const user = await User.findOne({email : {$regex: '^'+response.email+'$', $options : 'i'}});
+            const user = await User.findOne({ email: { $regex: '^' + response.email + '$', $options: 'i' } });
             const salt = await bcrypt.genSalt(10);
             const encryptPassword = await bcrypt.hash(newPassword, salt);
             user.password = encryptPassword;
             try {
                 const updatePassword = await User.findOneAndUpdate(
-                    {_id: user._id},
-                    {$set : user},
-                    {new : true}
+                    { _id: user._id },
+                    { $set: user },
+                    { new: true }
                 )
                 return next(CreateSuccess(200, "Password Reset Success !!"))
             } catch (error) {
