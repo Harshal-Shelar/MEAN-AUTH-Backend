@@ -18,6 +18,14 @@ const ProductSchema = mongoose.Schema(
             type : String,
             required : true
         },
+        salary:{
+            type : String,
+            required : true
+        },
+        empId:{
+            type : String,
+            required : true
+        },
         userId : {
             type : String,
             required : true
