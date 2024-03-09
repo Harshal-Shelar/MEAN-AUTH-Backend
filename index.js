@@ -10,8 +10,6 @@ import cookieParser from 'cookie-parser';
 const app = express();
 dotenv.config();
 
-var getUserId;
-
 app.use(express.json());
 const connectMongoDB = async()=>{
     try{
