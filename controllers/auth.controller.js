@@ -6,6 +6,11 @@ import { CreateSuccess } from "../utils/success.js";
 import { createError } from "../utils/error.js";
 import UserToken from "../models/UserToken.js";
 import nodemailer from 'nodemailer'
+import {LocalStorage} from "node-localstorage";
+
+
+var localStorage = new LocalStorage('./scratch'); 
+
 
 export const register = async (req, res, next) => {
     const role = await Role.find({ role: 'User' });
@@ -45,7 +50,8 @@ export const registerAdmin = async (req, res, next) => {
 export const login = async (req, res, next) => {
     try {
         const user = await User.findOne({ email: req.body.email }).populate("roles", "role");
-        console.log("login id:- ", user._id);
+
+        localStorage.setItem('LoggedUserId', user._id);
 
         const { roles } = user;
         if (!user) {

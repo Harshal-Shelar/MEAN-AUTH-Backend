@@ -7,10 +7,15 @@ import roleRoute from './routes/role.js';
 import authRoute from './routes/auth.js';
 import userRoute from './routes/user.js';
 import cookieParser from 'cookie-parser';
+import {LocalStorage} from 'node-localstorage';
+
 const app = express();
 dotenv.config();
 
+var localStorage = new LocalStorage('./scratch');
+
 app.use(express.json());
+
 const connectMongoDB = async()=>{
     try{
         await mongoose.connect(process.env.MONGO_URL);
@@ -47,7 +52,8 @@ app.post("/add-user", async (req, resp) => {
 });
 
 app.get("/user-list", async (req, resp) => {
-    const products = await Product.find({userId : "65e58868727ad72a1c1b2400"});
+    let LoggedUserId = localStorage.getItem('LoggedUserId');
+    const products = await Product.find({userId : LoggedUserId});
     if (products.length > 0) {
         resp.send(products);
     } else {
