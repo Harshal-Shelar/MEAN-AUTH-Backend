@@ -29,6 +29,14 @@ const ProductSchema = mongoose.Schema(
         userId : {
             type : String,
             required : true
+        },
+        startDate : {
+            type : String,
+            required : true
+        },
+        endDate : {
+            type : String,
+            required : true
         }
     },
     {
