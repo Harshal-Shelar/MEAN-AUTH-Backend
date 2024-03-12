@@ -8,6 +8,7 @@ import authRoute from './routes/auth.js';
 import userRoute from './routes/user.js';
 import cookieParser from 'cookie-parser';
 import {LocalStorage} from 'node-localstorage';
+import History from './models/History.js';
 
 const app = express();
 dotenv.config();
@@ -80,7 +81,25 @@ app.put("/updateUser/:id", async (req, resp) => {
         { _id: req.params.id },
         { $set: req.body }
     )
+    let updatedData = req.body;
+    resp.send({ result, updatedData });
+});
+
+//History Api's
+app.post("/add-history", async (req, resp) => {
+    let histroy = new History(req.body);
+    let result = await histroy.save();
     resp.send({ result });
+});
+
+app.get("/get-history", async (req, resp) => {
+    let LoggedUserId = localStorage.getItem('LoggedUserId');
+    const histroy = await History.find({userId : LoggedUserId});
+    if (histroy.length > 0) {
+        resp.send(histroy);
+    } else {
+        resp.send({ result: "No Product found" })
+    }
 });
 
 app.listen(2511, ()=>{
