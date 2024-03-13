@@ -2,10 +2,11 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import Product from './models/Product.js';
 import roleRoute from './routes/role.js';
 import authRoute from './routes/auth.js';
+import crudRoute from './routes/product.js';
 import userRoute from './routes/user.js';
+import historyRoute from './routes/history.js';
 import cookieParser from 'cookie-parser';
 import {LocalStorage} from 'node-localstorage';
 import History from './models/History.js';
@@ -33,6 +34,8 @@ app.use(cors({
 app.use("/api/role",roleRoute);
 app.use("/api/auth",authRoute);
 app.use("/api/user",userRoute);
+app.use("/api/crud",crudRoute);
+app.use("/api/crud/history",historyRoute);
 
 app.use((obj, req, res, next)=>{
     const statusCode = obj.status || 500;
@@ -45,62 +48,6 @@ app.use((obj, req, res, next)=>{
     })
 });
 
-
-app.post("/add-user", async (req, resp) => {
-    let product = new Product(req.body);
-    let result = await product.save();
-    resp.send({ result });
-});
-
-app.get("/user-list", async (req, resp) => {
-    let LoggedUserId = localStorage.getItem('LoggedUserId');
-    const products = await Product.find({userId : LoggedUserId});
-    if (products.length > 0) {
-        resp.send(products);
-    } else {
-        resp.send({ result: "No Product found" })
-    }
-});
-
-app.delete("/userDelete/:id", async (req, resp) => {
-    let result = await Product.deleteOne({ _id: req.params.id });
-    resp.send(result)
-});
-
-app.get("/userUpdate/:id", async (req, resp) => {
-    let result = await Product.findOne({ _id: req.params.id })
-    if (result) {
-        resp.send(result)
-    } else {
-        resp.send({ "result": "No Record Found." })
-    }
-})
-
-app.put("/updateUser/:id", async (req, resp) => {
-    let result = await Product.updateOne(
-        { _id: req.params.id },
-        { $set: req.body }
-    )
-    let updatedData = req.body;
-    resp.send({ result, updatedData });
-});
-
-//History Api's
-app.post("/add-history", async (req, resp) => {
-    let histroy = new History(req.body);
-    let result = await histroy.save();
-    resp.send({ result });
-});
-
-app.get("/get-history", async (req, resp) => {
-    let LoggedUserId = localStorage.getItem('LoggedUserId');
-    const histroy = await History.find({userId : LoggedUserId});
-    if (histroy.length > 0) {
-        resp.send(histroy);
-    } else {
-        resp.send({ result: "No Product found" })
-    }
-});
 
 app.listen(2511, ()=>{
     connectMongoDB();

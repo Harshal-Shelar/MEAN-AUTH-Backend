@@ -8,9 +8,7 @@ import UserToken from "../models/UserToken.js";
 import nodemailer from 'nodemailer'
 import {LocalStorage} from "node-localstorage";
 
-
 var localStorage = new LocalStorage('./scratch'); 
-
 
 export const register = async (req, res, next) => {
     const role = await Role.find({ role: 'User' });
@@ -29,6 +27,15 @@ export const register = async (req, res, next) => {
     return res.status(200).json("User register successfully");
 }
 
+export const getRegUser = async(req,res)=>{
+    const user = await User.find();
+    console.log(user);
+    if (user.length > 0) {
+        res.send(user);
+    } else {
+        res.send({ result: "No Product found" })
+    }
+}
 export const registerAdmin = async (req, res, next) => {
     const role = await Role.find({});
     const salt = await bcrypt.genSalt(10)
