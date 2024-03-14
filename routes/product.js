@@ -7,7 +7,7 @@ router.post("/add-user", addUser);
 router.get("/user-list", userList);
 router.get("/get-all-email", getAllEmail);
 router.delete("/userDelete/:id", deleteUser);
-router.put("/updateUser/:id", updateUser);
-router.get("/userUpdate/:id", updateUserbyId);
+router.put("/updateUser/:id", updateUserbyId);
+router.get("/getUserId/:id", updateUser);
 
 export default router;
