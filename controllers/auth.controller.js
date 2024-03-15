@@ -22,7 +22,8 @@ export const register = async (req, res, next) => {
         email: req.body.email,
         password: hashPassword,
         roles: role,
-    })
+    });
+
     await newUser.save();
     return res.status(200).json("User register successfully");
 }
@@ -54,10 +55,27 @@ export const registerAdmin = async (req, res, next) => {
     return next(CreateSuccess(200, "Admin Registered Successfully"));
 }
 
+export const getRegUserId = async (req, resp) => {
+    let result = await User.findOne({ _id: req.params.id })
+    if (result) {
+        resp.send(result)
+    } else {
+        resp.send({ "result": "No Record Found." })
+    }
+};
+
+export const updateRegDetails = async (req, resp) => {
+    let result = await User.updateOne(
+        { _id: req.params.id },
+        { $set: req.body }
+    )
+    let updatedData = req.body;
+    resp.send({ result, updatedData });
+};
+
 export const login = async (req, res, next) => {
     try {
         const user = await User.findOne({ email: req.body.email }).populate("roles", "role");
-
         localStorage.setItem('LoggedUserId', user._id);
 
         const { roles } = user;
